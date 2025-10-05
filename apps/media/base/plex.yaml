@@ -5,7 +5,7 @@ metadata:
   namespace: media
 spec:
   type: LoadBalancer
-  loadBalancerIP: 10.69.1.154
+  loadBalancerIP: 10.69.1.150
   selector:
     app: plex
   ports:
