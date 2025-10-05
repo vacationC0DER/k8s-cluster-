@@ -85,3 +85,4 @@ argocd-*.json
 # These are explicitly NOT ignored:
 # apps/media/base/sealed-secrets.yaml
 # */overlays/*/sealed-secrets.yaml
+.claude/

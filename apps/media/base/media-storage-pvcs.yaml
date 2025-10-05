@@ -1,0 +1,28 @@
+---
+# Large PVC for all media files and downloads
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-storage
+  namespace: media
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-client
+  resources:
+    requests:
+      storage: 10Ti
+---
+# Separate PVC for application configs (easier backups)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-configs
+  namespace: media
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-client
+  resources:
+    requests:
+      storage: 50Gi

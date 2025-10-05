@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex
+  namespace: media
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 10.69.1.154
+  selector:
+    app: plex
+  ports:
+  - name: plex
+    port: 32400
+    targetPort: 32400
+    protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex
+  namespace: media
+  labels:
+    app: plex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plex
+  template:
+    metadata:
+      labels:
+        app: plex
+    spec:
+      containers:
+      - name: plex
+        image: lscr.io/linuxserver/plex:latest
+        ports:
+        - containerPort: 32400
+          name: plex
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "America/Los_Angeles"
+        - name: VERSION
+          value: "docker"
+        # Plex Claim Token (get fresh token from https://www.plex.tv/claim/ - expires in 4 minutes)
+        # Apply manually: kubectl set env deployment/plex PLEX_CLAIM=claim-XXXXX -n media
+        # Or claim via Plex web UI after deployment: http://10.69.1.154:32400/web
+        - name: PLEX_CLAIM
+          value: ""
+        # Hardware Transcoding (AMD GPU)
+        - name: PLEX_PREFERENCE_1
+          value: "TranscoderTempDirectory=/transcode"
+        - name: PLEX_PREFERENCE_2
+          value: "HardwareAcceleratedCodecs=1"
+        # Resource management
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2000m"
+          limits:
+            memory: "8Gi"
+            cpu: "4000m"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+          subPath: plex
+        - name: storage
+          mountPath: /data
+        # Fast local storage for transcoding (NOT NFS)
+        - name: transcode
+          mountPath: /transcode
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: media-configs
+      - name: storage
+        persistentVolumeClaim:
+          claimName: media-storage
+      # emptyDir uses local node storage (much faster than NFS)
+      - name: transcode
+        emptyDir:
+          sizeLimit: 20Gi

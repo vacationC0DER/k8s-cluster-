@@ -1,0 +1,49 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: media-stack
+  namespace: media
+
+# Namespace
+namespace: media
+
+resources:
+  # Namespace (must be first)
+  - namespace.yaml
+
+  # Sealed Secrets (API keys for disaster recovery)
+  - sealed-secrets.yaml
+
+  # Persistent Volume Claims
+  - media-storage-pvcs.yaml
+
+  # Services (in deployment order)
+  # Deploy Prowlarr first (indexer manager)
+  - prowlarr.yaml
+
+  # Download clients
+  - qbittorrent.yaml
+  - sabnzbd.yaml
+
+  # *arr services (can deploy in parallel after Prowlarr)
+  - radarr.yaml
+  - sonarr.yaml
+  - lidarr.yaml
+
+  # Media server (deploy last)
+  - plex.yaml
+
+  # Request management (optional)
+  - overseerr.yaml
+
+# Common labels applied to all resources
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: media-stack
+      app.kubernetes.io/managed-by: kustomize
+
+# Common annotations
+commonAnnotations:
+  documentation: "https://github.com/k8s-at-home/charts"
+  architecture: "option-b-multiple-loadbalancers"
