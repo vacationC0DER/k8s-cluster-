@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex
+  namespace: media
+  labels:
+    app: plex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plex
+  template:
+    metadata:
+      labels:
+        app: plex
+    spec:
+      containers:
+      - name: plex
+        image: lscr.io/linuxserver/plex:latest
+        ports:
+        - containerPort: 32400
+          name: plex-web
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "America/Los_Angeles"
+        - name: VERSION
+          value: "docker"
+        - name: PLEX_CLAIM
+          value: "claim-vw9RPwDDyp_oSdeBUk4b"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+          subPath: plex
+        - name: storage
+          mountPath: /data
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: media-configs
+      - name: storage
+        persistentVolumeClaim:
+          claimName: media-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex
+  namespace: media
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 10.69.1.154
+  ports:
+  - port: 32400
+    targetPort: 32400
+    protocol: TCP
+    name: plex-web
+  selector:
+    app: plex
