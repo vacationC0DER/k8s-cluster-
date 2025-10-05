@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: media-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  # Project: default (can be customized for multi-tenancy)
+  project: default
+
+  # Source: GitHub repository with media stack manifests
+  source:
+    repoURL: https://github.com/vacationC0DER/k8s-cluster-.git
+    targetRevision: main  # Track main branch
+    path: apps/media/base  # Directory containing media stack YAMLs
+
+  # Destination: Target cluster and namespace
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: media
+
+  # Sync Policy: AUTOMATED - Full GitOps enabled!
+  syncPolicy:
+    # Auto-create namespace if needed
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+
+    # AUTOMATED sync enabled - Git is source of truth
+    automated:
+      prune: true      # Remove resources not in Git
+      selfHeal: true   # Auto-revert manual changes within 3 minutes
+      allowEmpty: false
+
+    # Retry strategy for failed syncs
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Ignore differences in these fields (common for managed resources)
+  ignoreDifferences:
+    # Don't consider replicas as drift (can scale manually if needed)
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    # Ignore service annotations added by cloud controllers
+    - group: ""
+      kind: Service
+      jsonPointers:
+        - /metadata/annotations
+        - /spec/clusterIP
+        - /spec/clusterIPs
