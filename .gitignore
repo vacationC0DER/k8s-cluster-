@@ -86,3 +86,7 @@ argocd-*.json
 # apps/media/base/sealed-secrets.yaml
 # */overlays/*/sealed-secrets.yaml
 .claude/
+
+# etcd Backups (contain sensitive cluster data)
+backups/
+*.db

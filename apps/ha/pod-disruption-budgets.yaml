@@ -1,0 +1,64 @@
+---
+# Pod Disruption Budget for ArgoCD Server
+# Ensures at least 1 ArgoCD server replica available during disruptions
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: argocd-server-pdb
+  namespace: argocd
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-server
+
+---
+# Pod Disruption Budget for ArgoCD Repo Server
+# Ensures at least 1 repo server replica available during disruptions
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: argocd-repo-server-pdb
+  namespace: argocd
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-repo-server
+
+---
+# Pod Disruption Budget for ArgoCD Application Controller
+# Protects the application controller (StatefulSet)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: argocd-application-controller-pdb
+  namespace: argocd
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-application-controller
+
+---
+# NOTE: Media stack services run with replicas=1
+# PDBs with minAvailable=1 would prevent any disruption
+# Decision: Do NOT create PDBs for single-replica services
+#
+# To enable PDBs for media stack:
+# 1. Scale services to replicas=2 or more
+# 2. Create PDB with minAvailable=1 or maxUnavailable=1
+# 3. Test node drain operations
+#
+# Example (if scaling services):
+# ---
+# apiVersion: policy/v1
+# kind: PodDisruptionBudget
+# metadata:
+#   name: plex-pdb
+#   namespace: media
+# spec:
+#   minAvailable: 1
+#   selector:
+#     matchLabels:
+#       app: plex

@@ -1,0 +1,67 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: media-stack
+  namespace: argocd
+  # Finalizer ensures proper cleanup
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  # Project: default (can be customized for multi-tenancy)
+  project: default
+
+  # Source: Directory of manifests
+  # NOTE: ArgoCD requires a Git repository. For testing without remote Git:
+  # Option 1: Create local Git repo and use file:// URL (not recommended)
+  # Option 2: Push to GitHub/GitLab (recommended)
+  # Option 3: Use Helm chart or declarative manifests (current approach)
+  #
+  # For this demo, we'll manually apply and have ArgoCD manage declaratively
+  source:
+    # Using directory structure
+    repoURL: https://github.com/argoproj/argocd-example-apps
+    targetRevision: HEAD
+    path: guestbook
+
+    # TEMPORARY: This points to example app
+    # To enable real GitOps:
+    # 1. Create GitHub repo: k8_cluster
+    # 2. Push local Git to remote
+    # 3. Update repoURL to: https://github.com/yourusername/k8_cluster.git
+    # 4. Update path to: apps/media/base
+
+  # Destination: Target cluster and namespace
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: media
+
+  # Sync Policy: Manual initially for testing
+  syncPolicy:
+    # Auto-create namespace if it doesn't exist
+    syncOptions:
+      - CreateNamespace=true
+
+    # Manual sync initially (no automated sync)
+    # automated:
+    #   prune: false
+    #   selfHeal: false
+
+    # Retry strategy for failed syncs
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Ignore differences in these fields (common for managed resources)
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: v1
+      kind: Service
+      jsonPointers:
+        - /spec/clusterIP
+        - /metadata/annotations
