@@ -90,3 +90,4 @@ argocd-*.json
 # etcd Backups (contain sensitive cluster data)
 backups/
 *.db
+config/talos/live-config
