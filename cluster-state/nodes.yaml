@@ -1,0 +1,78 @@
+# Talos Cluster Node Inventory
+# Last Updated: 2025-10-03
+
+nodes:
+  control_plane:
+    - hostname: talos-cp-1
+      ip: 10.69.1.101
+      mac: (check UniFi)
+      role: control-plane
+      disk: /dev/nvme0n1
+      disk_size: 512GB
+      status: operational
+      talos_version: v1.11.2
+      configured_date: 2025-10-03
+
+    - hostname: talos-cp-2
+      ip: 10.69.1.140
+      mac: (check UniFi)
+      role: control-plane
+      disk: /dev/nvme0n1
+      disk_size: 512GB
+      status: operational
+      talos_version: v1.11.2
+      configured_date: 2025-10-03
+
+    - hostname: talos-cp-3
+      ip: 10.69.1.147
+      mac: (check UniFi)
+      role: control-plane
+      disk: /dev/nvme0n1
+      disk_size: 512GB
+      status: operational
+      talos_version: v1.11.2
+      configured_date: 2025-10-03
+
+  workers:
+    - hostname: talos-worker-1
+      ip: 10.69.1.151
+      mac: (check UniFi)
+      role: worker
+      disk: /dev/nvme0n1
+      disk_size: 512GB
+      status: operational
+      talos_version: v1.11.2
+      configured_date: 2025-10-03
+
+    - hostname: talos-worker-2
+      ip: 10.69.1.197
+      mac: (check UniFi)
+      role: worker
+      disk: /dev/nvme0n1
+      disk_size: 512GB
+      status: operational
+      talos_version: v1.11.2
+      configured_date: 2025-10-03
+
+    - hostname: talos-worker-3
+      ip: 10.69.1.179
+      mac: (check UniFi)
+      role: worker
+      disk: /dev/nvme0n1
+      disk_size: 512GB
+      status: operational
+      talos_version: v1.11.2
+      configured_date: 2025-10-03
+
+cluster:
+  name: my-cluster
+  endpoint: https://10.69.1.101:6443
+  talos_version: v1.11.2
+  kubernetes_version: (pending bootstrap)
+  bootstrap_status: pending
+  total_nodes: 6
+  operational_nodes: 6
+  network: 10.69.1.0/24
+  metallb_pool: 10.69.1.150-160
+  nas_storage: 10.69.1.163
+
