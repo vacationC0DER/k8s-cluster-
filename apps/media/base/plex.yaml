@@ -31,6 +31,12 @@ spec:
       labels:
         app: plex
     spec:
+      # Fix NFS permissions - prevents "Operation not permitted" errors
+      # Ensures Preferences.xml (containing PlexOnlineToken) persists across restarts
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
       containers:
       - name: plex
         image: lscr.io/linuxserver/plex:latest
@@ -46,11 +52,10 @@ spec:
           value: "America/Los_Angeles"
         - name: VERSION
           value: "docker"
-        # Plex Claim Token (get fresh token from https://www.plex.tv/claim/ - expires in 4 minutes)
-        # Apply manually: kubectl set env deployment/plex PLEX_CLAIM=claim-XXXXX -n media
-        # Or claim via Plex web UI after deployment: http://10.69.1.154:32400/web
-        - name: PLEX_CLAIM
-          value: ""
+        # NOTE: PLEX_CLAIM removed - no longer needed!
+        # Server maintains authentication via PlexOnlineToken in Preferences.xml
+        # Token persists across restarts thanks to securityContext fixes above
+        # If you ever need to claim a FRESH server, use: kubectl set env deployment/plex PLEX_CLAIM=claim-XXX -n media
         # Hardware Transcoding (AMD GPU)
         - name: PLEX_PREFERENCE_1
           value: "TranscoderTempDirectory=/transcode"
