@@ -1,0 +1,87 @@
+# Secrets and Credentials (NEVER COMMIT)
+*.secret.yaml
+*-secret.yaml
+secrets/
+.env
+*.key
+*.token
+*.pem
+*.crt
+*.cert
+*password*
+*credentials*
+
+# Talos and Kubernetes Config (contain cluster credentials)
+talosconfig
+kubeconfig
+*.kubeconfig
+config/talos/live-config/talosconfig
+config/talos/live-config/kubeconfig
+
+# Temporary Secret Files
+/tmp/*.yaml
+*.tmp.yaml
+media-stack-secrets.yaml
+*-plaintext.yaml
+
+# Backup Files
+*.bak
+*~
+*.swp
+*.swo
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.code-workspace
+.DS_Store
+Thumbs.db
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Terraform (if used in future)
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# Helm (if charts downloaded locally)
+charts/
+*.tgz
+
+# Python (if scripts use venv)
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+env/
+
+# Node.js (if tools installed locally)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary Files
+*.tmp
+temp/
+.cache/
+
+# Documentation Build Artifacts
+_site/
+.jekyll-cache/
+
+# ArgoCD Generated Files (if any)
+argocd-*.json
+
+# ALLOWED: Sealed Secrets (encrypted, safe to commit)
+# These are explicitly NOT ignored:
+# apps/media/base/sealed-secrets.yaml
+# */overlays/*/sealed-secrets.yaml
