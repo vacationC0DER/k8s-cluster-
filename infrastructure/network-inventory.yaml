@@ -72,15 +72,18 @@ data:
   metallb.pool.end: "10.69.1.160"
   metallb.pool.cidr: "10.69.1.150-10.69.1.160"
 
-  # LoadBalancer IP Assignments (Reserved)
+  # LoadBalancer IP Assignments (Active)
   # Update when new services are exposed via LoadBalancer
   loadbalancer.ingress-nginx.ip: "10.69.1.150"
-  loadbalancer.plex.ip: "10.69.1.165"
-  loadbalancer.radarr.ip: "10.69.1.151"
-  loadbalancer.sonarr.ip: "10.69.1.152"
-  loadbalancer.prowlarr.ip: "10.69.1.153"
-  loadbalancer.qbittorrent.ip: "10.69.1.154"
+  loadbalancer.prowlarr.ip: "10.69.1.155"
+  loadbalancer.radarr.ip: "10.69.1.156"
+  loadbalancer.sonarr.ip: "10.69.1.157"
+  loadbalancer.qbittorrent.ip: "10.69.1.158"
+  loadbalancer.lidarr.ip: "10.69.1.159"
+  loadbalancer.overseerr.ip: "10.69.1.160"
+  loadbalancer.sabnzbd.ip: "10.69.1.161"
   loadbalancer.argocd.ip: "10.69.1.162"
+  loadbalancer.plex.ip: "10.69.1.165"
 
   # DNS Configuration
   dns.primary: "8.8.8.8"
@@ -105,28 +108,40 @@ metadata:
     app.kubernetes.io/name: media-stack-network
     app.kubernetes.io/part-of: media-stack
 data:
-  # External LoadBalancer IPs
+  # External LoadBalancer IPs (Actual assignments from MetalLB)
+  prowlarr.external-ip: "10.69.1.155"
+  prowlarr.external-url: "http://10.69.1.155:9696"
+
+  radarr.external-ip: "10.69.1.156"
+  radarr.external-url: "http://10.69.1.156:7878"
+
+  sonarr.external-ip: "10.69.1.157"
+  sonarr.external-url: "http://10.69.1.157:8989"
+
+  qbittorrent.external-ip: "10.69.1.158"
+  qbittorrent.external-url: "http://10.69.1.158:8080"
+
+  lidarr.external-ip: "10.69.1.159"
+  lidarr.external-url: "http://10.69.1.159:8686"
+
+  overseerr.external-ip: "10.69.1.160"
+  overseerr.external-url: "http://10.69.1.160:5055"
+
+  sabnzbd.external-ip: "10.69.1.161"
+  sabnzbd.external-url: "http://10.69.1.161:8080"
+
   plex.external-ip: "10.69.1.165"
   plex.external-url: "http://10.69.1.165:32400"
 
-  radarr.external-ip: "10.69.1.151"
-  radarr.external-url: "http://10.69.1.151:7878"
-
-  sonarr.external-ip: "10.69.1.152"
-  sonarr.external-url: "http://10.69.1.152:8989"
-
-  prowlarr.external-ip: "10.69.1.153"
-  prowlarr.external-url: "http://10.69.1.153:9696"
-
-  qbittorrent.external-ip: "10.69.1.154"
-  qbittorrent.external-url: "http://10.69.1.154:8080"
-
   # Internal Kubernetes DNS (Service Discovery)
-  plex.internal-url: "http://plex.media.svc.cluster.local:32400"
+  prowlarr.internal-url: "http://prowlarr.media.svc.cluster.local:9696"
   radarr.internal-url: "http://radarr.media.svc.cluster.local:7878"
   sonarr.internal-url: "http://sonarr.media.svc.cluster.local:8989"
-  prowlarr.internal-url: "http://prowlarr.media.svc.cluster.local:9696"
+  lidarr.internal-url: "http://lidarr.media.svc.cluster.local:8686"
   qbittorrent.internal-url: "http://qbittorrent.media.svc.cluster.local:8080"
+  sabnzbd.internal-url: "http://sabnzbd.media.svc.cluster.local:8080"
+  overseerr.internal-url: "http://overseerr.media.svc.cluster.local:5055"
+  plex.internal-url: "http://plex.media.svc.cluster.local:32400"
 
   # NFS Storage Configuration
   nfs.server: "10.69.1.163"
