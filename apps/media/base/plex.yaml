@@ -33,7 +33,7 @@ spec:
     spec:
       # InitContainer to fix file ownership before Plex starts
       # Runs as root to change ownership from 977:988 to 1000:1000
-      # Also adds secure connection settings to Preferences.xml
+      # Note: NFS ownership fixing is best-effort; linuxserver/plex handles permissions via PUID/PGID
       initContainers:
       - name: fix-permissions
         image: busybox:latest
@@ -43,25 +43,9 @@ spec:
         - |
           echo "Fixing ownership of /config/plex to 1000:1000..."
           chown -R 1000:1000 /config/plex 2>/dev/null || true
-
-          PREF_FILE="/config/plex/Library/Application Support/Plex Media Server/Preferences.xml"
-          if [ -f "$PREF_FILE" ]; then
-            echo "Checking Preferences.xml for secure connection settings..."
-            # Remove any existing secureConnections and customConnections attributes
-            sed -i 's/ secureConnections="[^"]*"//g' "$PREF_FILE"
-            sed -i 's/ customConnections="[^"]*"//g' "$PREF_FILE"
-            # Add them once after PublishServerOnPlexOnlineKey
-            sed -i 's/PublishServerOnPlexOnlineKey="1"/PublishServerOnPlexOnlineKey="1" secureConnections="1" customConnections="http:\/\/10.69.1.165:32400"/' "$PREF_FILE"
-            # Fix ownership and permissions
-            chown 1000:1000 "$PREF_FILE"
-            chmod 644 "$PREF_FILE"
-            echo "Preferences.xml updated successfully"
-          else
-            echo "Preferences.xml not found, will be created on first run"
-          fi
-          echo "Permission fix complete"
+          echo "Permission fix complete (best-effort on NFS)"
         securityContext:
-          runAsUser: 0  # Run as root to change ownership
+          runAsUser: 0  # Run as root to attempt ownership changes
         volumeMounts:
         - name: config
           mountPath: /config
@@ -89,6 +73,14 @@ spec:
           value: "TranscoderTempDirectory=/transcode"
         - name: PLEX_PREFERENCE_2
           value: "HardwareAcceleratedCodecs=1"
+        # Secure Remote Access Configuration (prevents app.plex.tv connection issues)
+        - name: PLEX_PREFERENCE_3
+          value: "secureConnections=1"
+        - name: PLEX_PREFERENCE_4
+          value: "customConnections=http://10.69.1.165:32400"
+        # Alternative: ADVERTISE_IP tells Plex about external LoadBalancer IP
+        - name: ADVERTISE_IP
+          value: "http://10.69.1.165:32400"
         # Resource management
         resources:
           requests:
@@ -97,6 +89,25 @@ spec:
           limits:
             memory: "8Gi"
             cpu: "4000m"
+        # Health checks to ensure Plex is accessible
+        livenessProbe:
+          httpGet:
+            path: /identity
+            port: 32400
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /identity
+            port: 32400
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
         volumeMounts:
         - name: config
           mountPath: /config
