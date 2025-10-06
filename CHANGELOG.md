@@ -8,9 +8,117 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### To Do
 - Test disaster recovery scenarios (Scenario 3, 4, 6)
+- Consider migrating hardcoded IPs in deployments to ConfigMap references
 
 ### In Progress
 - None
+
+---
+
+## [2025-10-06] - Centralized IP Address Management System
+
+**Execution Time:** 30 minutes
+**Status:** Complete ✅
+
+### Added
+
+#### 3-Layer IP Management Architecture
+
+**Layer 1: Git-Tracked Inventory** ✅
+- Created `infrastructure/network-inventory.yaml`
+  - Single source of truth for all IP addresses
+  - Version-controlled, human-readable YAML
+  - Contains: Control plane IPs, worker IPs, MetalLB pool, LoadBalancer assignments, NFS server, infrastructure IPs
+  - Two ConfigMaps: `network-inventory` (kube-system) and `media-stack-network` (media)
+
+**Layer 2: Kubernetes ConfigMaps** ✅
+- Applied ConfigMaps to cluster for programmatic access
+- `network-inventory` (kube-system): 45+ IP mappings for cluster infrastructure
+- `media-stack-network` (media): Service discovery for media stack
+  - External URLs: http://10.69.1.165:32400 (Plex), etc.
+  - Internal URLs: http://plex.media.svc.cluster.local:32400
+  - NFS paths: /mnt/media, /mnt/media/configs, /mnt/media/downloads
+
+**Layer 3: Documentation** ✅
+- Created `docs/procedures/IP_ADDRESS_MANAGEMENT.md`
+  - Complete usage guide with kubectl examples
+  - Workflows for changing IPs (LoadBalancer, NFS, infrastructure)
+  - Best practices (DO/DON'T lists)
+  - Troubleshooting procedures
+  - Future automation opportunities
+
+#### IP Address Allocation Documented
+
+| Range | Purpose | Count | Status |
+|-------|---------|-------|--------|
+| 10.69.1.101-103 | Control plane nodes | 3 | Static |
+| 10.69.1.140-197 | Worker nodes (current) | 5 | Static |
+| 10.69.1.150-160 | MetalLB pool | 11 | Dynamic |
+| 10.69.1.165 | Plex | 1 | Reserved |
+| 10.69.1.151-154 | Media services | 4 | Reserved |
+| 10.69.1.163 | NFS server | 1 | Static |
+
+### Benefits
+
+✅ **Single Source of Truth**: No IP duplication across files
+✅ **Version-Controlled**: Full audit trail in Git
+✅ **Programmatic Access**: kubectl queries, environment variables
+✅ **Human-Readable**: Easy to search and update
+✅ **ArgoCD-Compatible**: Can be auto-synced
+✅ **Future-Proof**: Supports automation scripts
+
+### Usage Examples
+
+**Query IP from kubectl:**
+```bash
+kubectl get configmap network-inventory -n kube-system \
+  -o jsonpath='{.data.loadbalancer\.plex\.ip}'
+# Output: 10.69.1.165
+```
+
+**Reference in deployment (future enhancement):**
+```yaml
+env:
+- name: ADVERTISE_IP
+  valueFrom:
+    configMapKeyRef:
+      name: media-stack-network
+      key: plex.external-url
+```
+
+**Use in shell scripts:**
+```bash
+PLEX_IP=$(kubectl get configmap network-inventory -n kube-system \
+  -o jsonpath='{.data.loadbalancer\.plex\.ip}')
+curl http://${PLEX_IP}:32400/identity
+```
+
+### Workflow for Changing IPs
+
+1. Update `infrastructure/network-inventory.yaml` (source of truth)
+2. Update service/deployment YAML files (if hardcoded)
+3. Commit to Git → ArgoCD auto-syncs ConfigMaps
+4. Verify and test connectivity
+
+### Future Enhancements
+
+- IP conflict detection script
+- Automated ConfigMap generation from inventory
+- DNS sync automation (update /etc/hosts)
+- IP availability checker for MetalLB pool
+- Pre-commit hooks to validate IP changes
+
+### Files Created
+
+1. `infrastructure/network-inventory.yaml` (638 lines)
+2. `infrastructure/kustomization.yaml` (Kustomize config)
+3. `docs/procedures/IP_ADDRESS_MANAGEMENT.md` (comprehensive guide)
+
+### References
+
+- Kubernetes ConfigMaps: https://kubernetes.io/docs/concepts/configuration/configmap/
+- Kustomize: https://kubectl.docs.kubernetes.io/references/kustomize/
+- MetalLB: https://metallb.universe.tf/configuration/
 
 ---
 
