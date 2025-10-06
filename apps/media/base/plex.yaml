@@ -37,6 +37,29 @@ spec:
         fsGroup: 1000
         runAsUser: 1000
         runAsGroup: 1000
+      # InitContainer to fix file ownership before Plex starts
+      initContainers:
+      - name: fix-permissions
+        image: busybox:latest
+        command:
+        - sh
+        - -c
+        - |
+          echo "Fixing ownership of /config to 1000:1000..."
+          chown -R 1000:1000 /config || true
+          echo "Adding secure connection settings to Preferences.xml..."
+          if [ -f "/config/plex/Library/Application Support/Plex Media Server/Preferences.xml" ]; then
+            sed -i 's/PublishServerOnPlexOnlineKey="1"/PublishServerOnPlexOnlineKey="1" secureConnections="1" customConnections="http:\/\/10.69.1.165:32400"/' "/config/plex/Library/Application Support/Plex Media Server/Preferences.xml"
+            echo "Preferences.xml updated successfully"
+          else
+            echo "Preferences.xml not found, will be created on first run"
+          fi
+          echo "Permission fix complete"
+        securityContext:
+          runAsUser: 0  # Run as root to change ownership
+        volumeMounts:
+        - name: config
+          mountPath: /config
       containers:
       - name: plex
         image: lscr.io/linuxserver/plex:latest
