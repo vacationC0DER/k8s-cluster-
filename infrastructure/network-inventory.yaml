@@ -1,0 +1,135 @@
+# Network Inventory - Single Source of Truth
+# This file defines all static IP addresses in the infrastructure
+# Version-controlled in Git, referenced by Kubernetes ConfigMaps and documentation
+#
+# Usage:
+#   - Update IPs here when changes occur
+#   - Commit to Git → ArgoCD syncs automatically
+#   - ConfigMaps reference this file via Kustomize
+#   - Scripts can parse this YAML for automation
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: network-inventory
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: network-inventory
+    app.kubernetes.io/component: infrastructure
+data:
+  # Cluster Network Configuration
+  cluster.network: "10.69.1.0/24"
+  cluster.pod-network: "10.244.0.0/16"
+  cluster.service-network: "10.96.0.0/12"
+
+  # Control Plane Nodes (3 nodes for HA)
+  # Beelink SER5: AMD Ryzen 7 5825U, 32GB RAM, 500GB NVMe
+  controlplane.node-1.ip: "10.69.1.101"
+  controlplane.node-1.hostname: "talos-cp-1"
+  controlplane.node-2.ip: "10.69.1.102"
+  controlplane.node-2.hostname: "talos-cp-2"
+  controlplane.node-3.ip: "10.69.1.103"
+  controlplane.node-3.hostname: "talos-cp-3"
+  controlplane.api-endpoint: "10.69.1.101:6443"
+
+  # Worker Nodes (3+ nodes for workload distribution)
+  # Beelink SER5: AMD Ryzen 7 5825U, 32GB RAM, 500GB NVMe
+  worker.node-1.ip: "10.69.1.104"
+  worker.node-1.hostname: "talos-worker-1"
+  worker.node-2.ip: "10.69.1.105"
+  worker.node-2.hostname: "talos-worker-2"
+  worker.node-3.ip: "10.69.1.106"
+  worker.node-3.hostname: "talos-worker-3"
+
+  # Current Worker Node Assignments (actual IPs in use)
+  # Update these when nodes are rebuilt or IP assignments change
+  worker.current-1.ip: "10.69.1.140"
+  worker.current-1.hostname: "talos-140"
+  worker.current-2.ip: "10.69.1.147"
+  worker.current-2.hostname: "talos-147"
+  worker.current-3.ip: "10.69.1.151"
+  worker.current-3.hostname: "talos-151"
+  worker.current-4.ip: "10.69.1.179"
+  worker.current-4.hostname: "talos-179"
+  worker.current-5.ip: "10.69.1.197"
+  worker.current-5.hostname: "talos-197"
+
+  # Infrastructure Services
+  nfs.server.ip: "10.69.1.163"
+  nfs.server.hostname: "nas-server"
+  nfs.export-path: "/mnt/media"
+
+  proxmox.server.ip: "10.69.1.180"
+  proxmox.server.hostname: "proxmox-host"
+
+  # Management Workstations
+  management.macbook.ip: "10.69.1.167"
+  management.macbook.hostname: "macbook-m2"
+
+  # MetalLB Load Balancer IP Pool
+  metallb.pool.start: "10.69.1.150"
+  metallb.pool.end: "10.69.1.160"
+  metallb.pool.cidr: "10.69.1.150-10.69.1.160"
+
+  # LoadBalancer IP Assignments (Reserved)
+  # Update when new services are exposed via LoadBalancer
+  loadbalancer.ingress-nginx.ip: "10.69.1.150"
+  loadbalancer.plex.ip: "10.69.1.165"
+  loadbalancer.radarr.ip: "10.69.1.151"
+  loadbalancer.sonarr.ip: "10.69.1.152"
+  loadbalancer.prowlarr.ip: "10.69.1.153"
+  loadbalancer.qbittorrent.ip: "10.69.1.154"
+  loadbalancer.argocd.ip: "10.69.1.162"
+
+  # DNS Configuration
+  dns.primary: "8.8.8.8"
+  dns.secondary: "1.1.1.1"
+
+  # Gateway Configuration
+  gateway.default: "10.69.1.1"
+
+  # Network Policies
+  network.policy.enabled: "true"
+  network.policy.default-deny: "false"
+
+---
+# Media Stack Service Discovery ConfigMap
+# Simplified references for media services
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: media-stack-network
+  namespace: media
+  labels:
+    app.kubernetes.io/name: media-stack-network
+    app.kubernetes.io/part-of: media-stack
+data:
+  # External LoadBalancer IPs
+  plex.external-ip: "10.69.1.165"
+  plex.external-url: "http://10.69.1.165:32400"
+
+  radarr.external-ip: "10.69.1.151"
+  radarr.external-url: "http://10.69.1.151:7878"
+
+  sonarr.external-ip: "10.69.1.152"
+  sonarr.external-url: "http://10.69.1.152:8989"
+
+  prowlarr.external-ip: "10.69.1.153"
+  prowlarr.external-url: "http://10.69.1.153:9696"
+
+  qbittorrent.external-ip: "10.69.1.154"
+  qbittorrent.external-url: "http://10.69.1.154:8080"
+
+  # Internal Kubernetes DNS (Service Discovery)
+  plex.internal-url: "http://plex.media.svc.cluster.local:32400"
+  radarr.internal-url: "http://radarr.media.svc.cluster.local:7878"
+  sonarr.internal-url: "http://sonarr.media.svc.cluster.local:8989"
+  prowlarr.internal-url: "http://prowlarr.media.svc.cluster.local:9696"
+  qbittorrent.internal-url: "http://qbittorrent.media.svc.cluster.local:8080"
+
+  # NFS Storage Configuration
+  nfs.server: "10.69.1.163"
+  nfs.media-path: "/mnt/media"
+  nfs.configs-path: "/mnt/media/configs"
+  nfs.downloads-path: "/mnt/media/downloads"
