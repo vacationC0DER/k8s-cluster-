@@ -29,7 +29,6 @@ resources:
   # *arr services (can deploy in parallel after Prowlarr)
   - radarr.yaml
   - sonarr.yaml
-  - lidarr.yaml
 
   # Media server (deploy last)
   - plex.yaml
