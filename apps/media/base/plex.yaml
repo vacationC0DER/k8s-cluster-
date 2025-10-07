@@ -93,24 +93,25 @@ spec:
             memory: "8Gi"
             cpu: "4000m"
         # Health checks to ensure Plex is accessible
+        # Increased delays to allow fresh database initialization
         livenessProbe:
           httpGet:
             path: /identity
             port: 32400
             scheme: HTTP
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
           periodSeconds: 30
           timeoutSeconds: 10
-          failureThreshold: 3
+          failureThreshold: 5
         readinessProbe:
           httpGet:
             path: /identity
             port: 32400
             scheme: HTTP
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
+          initialDelaySeconds: 90
+          periodSeconds: 15
+          timeoutSeconds: 10
+          failureThreshold: 5
         volumeMounts:
         - name: config
           mountPath: /config
